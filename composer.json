@@ -1,0 +1,17 @@
+{
+    "name": "mtantawy/flixbus-scraper",
+    "authors": [
+        {
+            "name": "Mahmoud Tantawy",
+            "email": "me@mtantawy.com"
+        }
+    ],
+    "require": {
+        "dmore/chrome-mink-driver": "^2.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "FlixbusScraper\\": "src/"
+        }
+    }
+}
