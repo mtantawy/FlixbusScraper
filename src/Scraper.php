@@ -2,18 +2,19 @@
 
 namespace FlixbusScraper;
 
-use Behat\Mink\Mink;
+use DateTime;
 use Behat\Mink\Session;
 use DMore\ChromeDriver\ChromeDriver;
-use Selenium\Client as SeleniumClient;
 
 class Scraper
 {
-    public function __construct()
+    public function __construct(DateTime $rideDate)
     {
         $this->session = new Session(new ChromeDriver('http://localhost:9222', null, ''));
         $this->session->start();
-        $this->session->visit('https://shop.flixbus.com/search?rideDate=03.11.2017&adult=1&children=0&departureCity=88&arrivalCity=1374&_locale=en');
+        $this->session->visit(
+            sprintf('https://shop.flixbus.com/search?rideDate=%s&adult=1&children=0&departureCity=88&arrivalCity=1374&_locale=en', $rideDate->format('d.m.Y'))
+        );
     }
 
     public function scrapTrips(): array
