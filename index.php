@@ -3,6 +3,8 @@
 require_once __DIR__.'/vendor/autoload.php';
 
 use FlixbusScraper\Scraper;
+use FlixbusScraper\Analyser;
+use FlixbusScraper\ViewHelper;
 
 $startDateTime = isset($_GET['startDate']) ? new DateTimeImmutable($_GET['startDate']) : new DateTimeImmutable();
 $endDateTime = isset($_GET['endDate']) ? new DateTimeImmutable($_GET['endDate']) : $startDateTime->add(new DateInterval('P1D'));
@@ -18,6 +20,12 @@ foreach ($period as $date) {
     $days[$date->format('d.m.Y')] = $scraper->scrapTrips();
     $scraper->stopSession();
 }
+$analyser = new Analyser($days);
+$lowestPrice = $analyser->getLowestPrice();
+$highestPrice = $analyser->getHighestPrice();
+$mostCommonPrice = $analyser->getMostCommonPrice();
+
+$viewHelper = new ViewHelper();
 ?>
 
 <!DOCTYPE html>
@@ -62,7 +70,14 @@ foreach ($period as $date) {
                                         continue;
                                     }
 
-                                    echo '<tr>';
+                                    $backgroundColor = $viewHelper->getTripBackgroundColor(
+                                        $trip->getPrice(),
+                                        $lowestPrice,
+                                        $highestPrice,
+                                        $mostCommonPrice
+                                    );
+
+                                    echo "<tr style='background-color: $backgroundColor;'>";
                                     echo '<td><strong>' . $trip->getDepartureDateTime()->format('h:i') . '</strong><br/>' . $trip->getArrivalDateTime()->format('h:i') . '</td>';
                                     echo '<td><strong>' . $trip->getPrice() . ' ' . $trip->getPriceCurrency() . '</strong><br/>' . $trip->getDuration()->h . ' Hrs' . ($trip->isDirect() ? ' ✔':' ✗') . '</td>';
                                     echo '</tr>';
