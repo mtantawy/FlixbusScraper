@@ -4,9 +4,13 @@ require_once __DIR__.'/vendor/autoload.php';
 
 use FlixbusScraper\Scraper;
 
-$startDateTime = new DateTimeImmutable();
-$endDateTime = $startDateTime->add(new DateInterval('P2D'));
-$period = new DatePeriod($startDateTime, new DateInterval('P1D'), $endDateTime);
+$startDateTime = isset($_GET['startDate']) ? new DateTimeImmutable($_GET['startDate']) : new DateTimeImmutable();
+$endDateTime = isset($_GET['endDate']) ? new DateTimeImmutable($_GET['endDate']) : $startDateTime->add(new DateInterval('P1D'));
+$period = new DatePeriod(
+    $startDateTime,
+    new DateInterval('P1D'),
+    $endDateTime->add(new DateInterval('P1D')) // because end-date is excluded in the generated period
+);
 
 $days = [];
 foreach ($period as $date) {
@@ -22,47 +26,56 @@ foreach ($period as $date) {
     <title>Flixbus Timetable</title>
 </head>
 <body>
-    <table>
-        <thead>
-            <tr>
-                <?php
-                foreach ($days as $dateString => $trips) {
-                    echo '<th>' . $dateString . '</th>';
-                }
-                ?>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <?php foreach ($days as $dateString => $trips) : ?>
-                <td valign="top">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>departs<br/>arrives</th>
-                                <th>price<br/>duration</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            foreach ($trips as $trip) {
-                                if ($trip->getDepartureDateTime()->format('d.m.Y') !== $dateString) {
-                                    continue;
-                                }
+    <div>
+        <form>
+            Start: <input type="text" name="startDate" value="<?php echo $startDateTime->format('d.m.Y');?>">
+            End: <input type="text" name="endDate" value="<?php echo $endDateTime->format('d.m.Y');?>">
+            <input type="submit" value="Get Timetable!">
+        </form>
+    </div>
+    <div>
+        <table>
+            <thead>
+                <tr>
+                    <?php
+                    foreach ($days as $dateString => $trips) {
+                        echo '<th>' . $dateString . '</th>';
+                    }
+                    ?>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <?php foreach ($days as $dateString => $trips) : ?>
+                    <td valign="top">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>departs<br/>arrives</th>
+                                    <th>price<br/>duration</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                foreach ($trips as $trip) {
+                                    if ($trip->getDepartureDateTime()->format('d.m.Y') !== $dateString) {
+                                        continue;
+                                    }
 
-                                echo '<tr>';
-                                echo '<td>' . $trip->getDepartureDateTime()->format('h:i') . '<br/>' . $trip->getArrivalDateTime()->format('h:i') . '</td>';
-                                echo '<td>' . $trip->getPrice() . ' ' . $trip->getPriceCurrency() . '<br/>' . $trip->getDuration()->h . ' Hrs' . ($trip->isDirect() ? ' ✔':' ✗') . '</td>';
-                                echo '</tr>';
-                            }
-                            ?>
-                        </tbody>
-                    </table>
-                <?php endforeach; ?>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+                                    echo '<tr>';
+                                    echo '<td><strong>' . $trip->getDepartureDateTime()->format('h:i') . '</strong><br/>' . $trip->getArrivalDateTime()->format('h:i') . '</td>';
+                                    echo '<td><strong>' . $trip->getPrice() . ' ' . $trip->getPriceCurrency() . '</strong><br/>' . $trip->getDuration()->h . ' Hrs' . ($trip->isDirect() ? ' ✔':' ✗') . '</td>';
+                                    echo '</tr>';
+                                }
+                                ?>
+                            </tbody>
+                        </table>
+                    <?php endforeach; ?>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </body>
 <style type="text/css">
     table {
