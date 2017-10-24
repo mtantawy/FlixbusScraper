@@ -2,7 +2,8 @@
 
 namespace FlixbusScraper;
 
-use DateTime;
+use DateTimeInterface;
+use DateTimeImmutable;
 use DateInterval;
 
 class Trip
@@ -16,13 +17,14 @@ class Trip
     private $duration;
     private $isDirect;
     private $price;
+    private $priceCurrency = '';
 
-    public function getDepartureDateTime(): DateTime
+    public function getDepartureDateTime(): DateTimeInterface
     {
         return $this->departureDateTime;
     }
 
-    public function getArrivalDateTime(): DateTime
+    public function getArrivalDateTime(): DateTimeInterface
     {
         return $this->arrivalDateTime;
     }
@@ -52,14 +54,19 @@ class Trip
         return $this->price;
     }
 
+    public function getPriceCurrency(): string
+    {
+        return $this->priceCurrency;
+    }
+
     public function setDepartureDateTime(string $date, string $time)
     {
-        $this->departureDateTime = new DateTime($date . ' ' . $time);
+        $this->departureDateTime = new DateTimeImmutable($date . ' ' . $time);
     }
 
     public function setArrivalDateTime(string $date, string $time)
     {
-        $this->arrivalDateTime = new DateTime($date . ' ' . $time);
+        $this->arrivalDateTime = new DateTimeImmutable($date . ' ' . $time);
         if ($this->arrivalDateTime < $this->departureDateTime) {
             $this->arrivalDateTime = $this->arrivalDateTime->add(new DateInterval('P1D'));
         }
@@ -75,7 +82,7 @@ class Trip
         $this->arrivalStation = $station;
     }
 
-    public function setDuration(DateTime $departure, DateTime $arrival)
+    public function setDuration(DateTimeInterface $departure, DateTimeInterface $arrival)
     {
         $this->duration = $departure->diff($arrival);
     }
@@ -88,5 +95,11 @@ class Trip
     public function setPrice(string $price)
     {
         $this->price = (float) trim(str_replace(['$', '€'], '', $price));
+
+        if (false !== mb_stripos($price, '€')) {
+            $this->priceCurrency = '€';
+        } elseif (false !== mb_stripos($price, '$')) {
+            $this->priceCurrency = '$';
+        }
     }
 }

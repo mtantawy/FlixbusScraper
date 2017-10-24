@@ -2,13 +2,13 @@
 
 namespace FlixbusScraper;
 
-use DateTime;
+use DateTimeInterface;
 use Behat\Mink\Session;
 use DMore\ChromeDriver\ChromeDriver;
 
 class Scraper
 {
-    public function __construct(DateTime $rideDate)
+    public function __construct(DateTimeInterface $rideDate)
     {
         $this->session = new Session(new ChromeDriver('http://localhost:9222', null, ''));
         $this->session->start();
@@ -28,14 +28,19 @@ class Scraper
         }
     }
 
-    public function __destruct()
+    public function stopSession()
     {
-        if ($this->session instanceof Session) {
+        if ($this->session instanceof Session && $this->session->isStarted()) {
             try {
                 $this->session->stop();
             } catch (Exception $e) {
                 ;
             }
         }
+    }
+
+    public function __destruct()
+    {
+        $this->stopSession();
     }
 }
