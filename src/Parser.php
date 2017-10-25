@@ -3,6 +3,7 @@
 namespace FlixbusScraper;
 
 use Behat\Mink\Element\DocumentElement;
+use Behat\Mink\Element\NodeElement;
 
 class Parser
 {
@@ -18,6 +19,10 @@ class Parser
         $trips = [];
         $rides = $this->page->findAll('css', '.ride-available');
         foreach ($rides as $ride) {
+            if (! $this->isBookable($ride)) {
+                continue;
+            }
+
             $trip = new Trip();
             $trip->setDepartureDateTime(
                 $ride->getAttribute('data-departure-date'),
@@ -37,5 +42,10 @@ class Parser
         }
 
         return $trips;
+    }
+
+    private function isBookable(NodeElement $ride): bool
+    {
+        return null !== $ride->find('css', '.total');
     }
 }
