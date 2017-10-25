@@ -78,7 +78,7 @@ $viewHelper = new ViewHelper();
                                     );
 
                                     echo "<tr style='background-color: $backgroundColor;'>";
-                                    echo '<td><strong>' . $trip->getDepartureDateTime()->format('h:i') . '</strong><br/>' . $trip->getArrivalDateTime()->format('h:i') . '</td>';
+                                    echo '<td><strong>' . $trip->getDepartureDateTime()->format('H:i') . '</strong><br/>' . $trip->getArrivalDateTime()->format('H:i') . '</td>';
                                     echo '<td><strong>' . $trip->getPrice() . ' ' . $trip->getPriceCurrency() . '</strong><br/>' . $trip->getDuration()->h . ' Hrs' . ($trip->isDirect() ? ' ✔':' ✗') . '</td>';
                                     echo '</tr>';
                                 }
